@@ -1,0 +1,8 @@
+openai-whisper
+tqdm
+fastapi
+uvicorn
+python-multipart
+openai>=1.0.0
+requests
+aiofiles

@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>字幕工坊</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --accent-weak: rgba(37, 99, 235, 0.12);
+            --surface: #ffffff;
+            --surface-alt: #f7f8fb;
+            --ink: #111827;
+            --ink-soft: #475569;
+            --muted: #94a3b8;
+            --border: rgba(148, 163, 184, 0.22);
+            --border-strong: rgba(148, 163, 184, 0.35);
+            --shadow-soft: 0 24px 60px -28px rgba(15, 23, 42, 0.22);
+            --shadow-card: 0 24px 60px -32px rgba(15, 23, 42, 0.28);
+            --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.14);
+            --radius-lg: 16px;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #fbfbfd;
+            background-image:
+                radial-gradient(circle at 18% 10%, rgba(37, 99, 235, 0.06), transparent 45%),
+                radial-gradient(circle at 82% 12%, rgba(15, 23, 42, 0.05), transparent 45%),
+                linear-gradient(180deg, #fafafa 0%, #f6f7fb 100%);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d1d5db;
+        }
+
+        /* 动效 */
+        .fade-in-up {
+            animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(18px);
+        }
+        
+        .fade-in-up-delay-1 { animation-delay: 0.15s; }
+        .fade-in-up-delay-2 { animation-delay: 0.3s; }
+        .fade-in-up-delay-3 { animation-delay: 0.45s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 表单细节 */
+        .input-group {
+            transition: all 0.3s ease;
+        }
+        .input-group:focus-within {
+            transform: translateY(-1px);
+        }
+        
+        /* 上传区域 */
+        .upload-zone {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23E5E7EBFF' stroke-width='1.5' stroke-dasharray='8%2c 8' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.14), 0 20px 40px -34px rgba(15, 23, 42, 0.35);
+            position: relative;
+            isolation: isolate;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        .upload-zone::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.12));
+            opacity: 0.65;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .upload-zone:hover, .upload-zone.drag-over {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%233B82F6FF' stroke-width='1.5' stroke-dasharray='8%2c 8' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            background-color: rgba(37, 99, 235, 0.02);
+            transform: translateY(-1px) scale(1.004);
+            box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.18), 0 26px 50px -36px rgba(15, 23, 42, 0.4);
+        }
+
+        /* 卡片质感 */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(22px);
+            border: 1px solid rgba(255, 255, 255, 0.88);
+            box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+        }
+        .glass-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.3));
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .glass-panel::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            pointer-events: none;
+        }
+
+        /* 开关按钮 */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: var(--primary);
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: var(--primary);
+        }
+        
+        /* 供应商标签 */
+        .provider-chip {
+            background: rgba(248, 250, 252, 0.95);
+            border: 1px solid var(--border);
+            color: var(--ink-soft);
+            transition: all 0.22s ease;
+        }
+        .provider-chip:hover {
+            border-color: var(--border-strong);
+            color: var(--primary);
+            background: #ffffff;
+            box-shadow: 0 10px 24px -18px rgba(15, 23, 42, 0.4);
+        }
+        .provider-chip.active-provider {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 16px 36px -22px rgba(15, 23, 42, 0.6);
+            transform: translateY(-1px);
+        }
+        .provider-chip:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .soft-input {
+            background: rgba(248, 250, 252, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+            transition: all 0.25s ease;
+            letter-spacing: 0.01em;
+        }
+        .soft-input:focus {
+            border-color: rgba(37, 99, 235, 0.5);
+            box-shadow: var(--focus-ring);
+            background: #ffffff;
+        }
+        .soft-select {
+            border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+            transition: all 0.25s ease;
+            letter-spacing: 0.02em;
+        }
+        .soft-select:focus {
+            border-color: rgba(37, 99, 235, 0.55);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #0f172a 0%, #1f2937 60%, #0f172a 100%);
+            box-shadow: 0 20px 44px -26px rgba(15, 23, 42, 0.55);
+            letter-spacing: 0.26em;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 26px 60px -32px rgba(15, 23, 42, 0.6);
+        }
+        .btn-primary:focus-visible {
+            outline: none;
+            box-shadow: 0 20px 44px -26px rgba(15, 23, 42, 0.55), var(--focus-ring);
+        }
+        .btn-ghost {
+            background: rgba(248, 250, 252, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            color: #64748b;
+            transition: all 0.25s ease;
+            letter-spacing: 0.22em;
+        }
+        .btn-ghost:hover {
+            color: var(--primary);
+            border-color: rgba(148, 163, 184, 0.45);
+            box-shadow: 0 16px 36px -30px rgba(15, 23, 42, 0.45);
+        }
+        .btn-ghost:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+        .result-card {
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 10px 28px -24px rgba(15, 23, 42, 0.4);
+            transition: all 0.25s ease;
+            backdrop-filter: blur(1px);
+        }
+        .result-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(148, 163, 184, 0.4);
+            box-shadow: 0 20px 48px -30px rgba(15, 23, 42, 0.45);
+        }
+        .result-card:focus-visible {
+            outline: none;
+            border-color: rgba(37, 99, 235, 0.45);
+            box-shadow: var(--focus-ring);
+        }
+        .accent-text {
+            color: var(--accent);
+        }
+        .accent-dot {
+            background: var(--accent);
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, rgba(15, 23, 42, 0.8), rgba(37, 99, 235, 0.75), rgba(15, 23, 42, 0.8));
+        }
+        .status-title {
+            animation: breathe 2.2s ease-in-out infinite;
+        }
+        @keyframes breathe {
+            0%, 100% { opacity: 0.88; }
+            50% { opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .fade-in-up {
+                animation: none;
+                opacity: 1;
+                transform: none;
+            }
+            .status-title {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-5 md:p-6">
+
+    <div class="w-full max-w-2xl">
+        <!-- 顶部标题 -->
+        <div class="text-center mb-14 fade-in-up">
+            <h1 class="text-4xl font-bold text-gray-900 tracking-tight mb-3">
+                字幕工坊
+            </h1>
+            <p class="text-xs text-gray-400 tracking-[0.24em]">
+                提取｜润色｜生成
+            </p>
+        </div>
+
+        <!-- 主卡片 -->
+        <div class="glass-panel rounded-2xl p-8 md:p-12 fade-in-up fade-in-up-delay-1 relative overflow-hidden">
+            
+            <!-- 上传区域 -->
+            <div id="upload-section" class="relative z-10">
+                <div id="drop-zone" class="upload-zone rounded-xl h-56 flex flex-col items-center justify-center cursor-pointer group bg-white/60">
+                    <input type="file" id="file-input" class="hidden" accept="video/*,audio/*,.srt">
+                    
+                    <div id="upload-placeholder" class="text-center transition-all duration-500 group-hover:-translate-y-1">
+                        <span class="text-2xl text-gray-300 group-hover:text-gray-600 transition-colors mb-2.5 block font-light">＋</span>
+                        <p class="text-sm text-gray-500 font-medium tracking-[0.06em]">拖拽或点击上传</p>
+                    </div>
+
+                    <div id="file-info" class="hidden text-center fade-in-up">
+                        <div class="w-12 h-12 bg-white/80 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.6)]">
+                            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 id="file-name" class="text-base font-medium text-gray-900 mb-2 max-w-xs truncate px-4 mx-auto">示例文件</h3>
+                        <button id="reselect-btn" class="text-xs text-gray-400 hover:text-gray-700 border-b border-transparent hover:border-gray-400 transition-all pb-0.5">重选</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 参数配置 -->
+            <div id="config-section" class="mt-10 space-y-8 hidden fade-in-up">
+                
+                <!-- 基础选项 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- 识别精度 -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 mb-3 tracking-wider">识别档位</label>
+                        <div class="relative">
+                            <select id="model-size" class="soft-select w-full appearance-none bg-transparent text-gray-900 text-sm py-2 pr-8 focus:ring-0 outline-none cursor-pointer font-medium">
+                                <option value="tiny">极速</option>
+                                <option value="base" selected>标准</option>
+                                <option value="small">进阶</option>
+                                <option value="medium">精准</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center text-gray-400">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 表达风格 -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 mb-3 tracking-wider">润色风格</label>
+                        <div class="relative">
+                            <select id="humor-level" class="soft-select w-full appearance-none bg-transparent text-gray-900 text-sm py-2 pr-8 focus:ring-0 outline-none cursor-pointer font-medium">
+                                <option value="none">校对</option>
+                                <option value="moderate" selected>润色</option>
+                                <option value="high">风趣</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center text-gray-400">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 智能润色 -->
+                <div class="pt-6 border-t border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center">
+                            <div class="relative inline-block w-8 mr-3 align-middle select-none">
+                                <input type="checkbox" name="use-llm" id="use-llm" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 appearance-none cursor-pointer border-gray-300 transition-all duration-300 left-0 top-0.5"/>
+                                <label for="use-llm" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-200 cursor-pointer"></label>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">智能润色</span>
+                        </div>
+                        
+                        <div class="flex items-center group cursor-pointer" id="note-toggle-wrapper">
+                             <input type="checkbox" id="generate-note" class="w-3 h-3 text-gray-900 rounded border-gray-300 focus:ring-gray-900 mr-2 cursor-pointer" disabled>
+                             <label for="generate-note" class="text-xs text-gray-400 group-hover:text-gray-600 transition-colors cursor-pointer" id="generate-note-label">生成笔记</label>
+                        </div>
+                    </div>
+
+                    <div id="llm-details" class="hidden space-y-6 pt-2">
+                        <div>
+                            <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar" id="provider-chips">
+                                <button class="provider-chip px-4 py-1.5 bg-gray-50 border border-transparent rounded-full text-xs font-medium text-gray-500 hover:text-gray-900 transition-all whitespace-nowrap active-provider" data-val="openai">开放平台</button>
+                                <button class="provider-chip px-4 py-1.5 bg-gray-50 border border-transparent rounded-full text-xs font-medium text-gray-500 hover:text-gray-900 transition-all whitespace-nowrap" data-val="deepseek">深度求索</button>
+                                <button class="provider-chip px-4 py-1.5 bg-gray-50 border border-transparent rounded-full text-xs font-medium text-gray-500 hover:text-gray-900 transition-all whitespace-nowrap" data-val="glm">智谱清言</button>
+                                <button class="provider-chip px-4 py-1.5 bg-gray-50 border border-transparent rounded-full text-xs font-medium text-gray-500 hover:text-gray-900 transition-all whitespace-nowrap" data-val="aliyun">通义千问</button>
+                                <button class="provider-chip px-4 py-1.5 bg-gray-50 border border-transparent rounded-full text-xs font-medium text-gray-500 hover:text-gray-900 transition-all whitespace-nowrap" data-val="custom">自定义</button>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 gap-4">
+                            <input type="password" id="llm-key" placeholder="输入接口密钥" class="soft-input w-full rounded-lg px-4 py-3 text-sm focus:ring-0 outline-none placeholder-gray-400">
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" id="llm-base" placeholder="接口地址" class="soft-input w-full rounded-lg px-4 py-3 text-xs text-gray-500 focus:ring-0 outline-none font-mono" value="https://api.openai.com/v1" readonly>
+                                <input type="text" id="llm-model" placeholder="模型名称" class="soft-input w-full rounded-lg px-4 py-3 text-xs text-gray-500 focus:ring-0 outline-none font-mono" value="gpt-3.5-turbo">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="start-btn" class="btn-primary w-full text-white py-4 rounded-xl font-medium text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.99]">
+                    开始处理
+                </button>
+            </div>
+
+            <!-- 处理中 -->
+            <div id="processing-state" class="hidden mt-16 text-center">
+                <div class="w-16 h-1 bg-gray-100 rounded-full mx-auto overflow-hidden mb-6">
+                    <div class="progress-bar h-full animate-[loading_1.5s_ease-in-out_infinite]"></div>
+                </div>
+                <h3 class="status-title text-lg font-serif font-bold text-gray-900 mb-2" id="status-title">处理中</h3>
+                <p class="text-xs text-gray-400 font-light tracking-[0.04em]" id="status-desc">正在处理</p>
+            </div>
+
+            <!-- 结果展示 -->
+            <div id="result-state" class="hidden mt-10 fade-in-up">
+                <div class="text-center mb-10">
+                    <div class="inline-block p-3 rounded-full bg-blue-50 mb-4">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">处理完成</h3>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <a id="dl-audio" href="#" target="_blank" class="result-card hidden group flex flex-col items-center justify-center p-6 bg-white rounded-xl">
+                        <span class="text-xs font-bold text-gray-400 mb-2 group-hover:text-gray-600">音频</span>
+                        <span class="text-sm font-medium text-gray-900">下载音频</span>
+                    </a>
+
+                    <a id="dl-srt" href="#" target="_blank" class="result-card hidden group flex flex-col items-center justify-center p-6 bg-white rounded-xl">
+                        <span class="text-xs font-bold text-gray-400 mb-2 group-hover:text-gray-600">原始</span>
+                        <span class="text-sm font-medium text-gray-900">下载字幕</span>
+                    </a>
+
+                    <a id="dl-opt-srt" href="#" target="_blank" class="result-card hidden group flex flex-col items-center justify-center p-6 bg-slate-50 rounded-xl sm:col-span-2 relative overflow-hidden">
+                        <span class="text-xs font-bold accent-text mb-2">润色</span>
+                        <span class="text-base font-medium text-gray-900">下载润色稿</span>
+                        <div class="accent-dot absolute top-3 right-3 w-1.5 h-1.5 rounded-full"></div>
+                    </a>
+
+                    <a id="dl-note" href="#" target="_blank" class="result-card hidden group flex flex-col items-center justify-center p-6 bg-white rounded-xl sm:col-span-2">
+                        <span class="text-xs font-bold accent-text mb-2">笔记</span>
+                        <span class="text-sm font-medium text-gray-900">下载笔记</span>
+                    </a>
+                </div>
+                
+                <button onclick="location.reload()" class="btn-ghost mt-12 w-full text-xs py-3 rounded-xl">处理新文件</button>
+            </div>
+
+        </div>
+    </div>
+
+    <style>
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(0); }
+            100% { transform: translateX(100%); }
+        }
+    </style>
+
+    <script>
+        const state = {
+            file: null,
+            taskId: null,
+            pollTimer: null,
+            config: {
+                provider: 'openai',
+                useLlm: false,
+                baseUrl: 'https://api.openai.com/v1',
+                model: 'gpt-3.5-turbo'
+            }
+        };
+
+        const els = {
+            dropZone: document.getElementById('drop-zone'),
+            fileInput: document.getElementById('file-input'),
+            uploadPlaceholder: document.getElementById('upload-placeholder'),
+            fileInfo: document.getElementById('file-info'),
+            fileName: document.getElementById('file-name'),
+            reselectBtn: document.getElementById('reselect-btn'),
+            uploadSection: document.getElementById('upload-section'),
+            configSection: document.getElementById('config-section'),
+            useLlmCheckbox: document.getElementById('use-llm'),
+            llmDetails: document.getElementById('llm-details'),
+            generateNoteCheckbox: document.getElementById('generate-note'),
+            generateNoteLabel: document.getElementById('generate-note-label'),
+            providerChips: document.querySelectorAll('.provider-chip'),
+            llmKey: document.getElementById('llm-key'),
+            llmBase: document.getElementById('llm-base'),
+            llmModel: document.getElementById('llm-model'),
+            modelSize: document.getElementById('model-size'),
+            humorLevel: document.getElementById('humor-level'),
+            startBtn: document.getElementById('start-btn'),
+            processingState: document.getElementById('processing-state'),
+            statusTitle: document.getElementById('status-title'),
+            statusDesc: document.getElementById('status-desc'),
+            resultState: document.getElementById('result-state'),
+            dlAudio: document.getElementById('dl-audio'),
+            dlSrt: document.getElementById('dl-srt'),
+            dlOptSrt: document.getElementById('dl-opt-srt'),
+            dlNote: document.getElementById('dl-note')
+        };
+
+        const PROVIDERS = {
+            openai: { base: 'https://api.openai.com/v1', model: 'gpt-3.5-turbo' },
+            deepseek: { base: 'https://api.deepseek.com', model: 'deepseek-chat' },
+            glm: { base: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4' },
+            aliyun: { base: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-turbo' },
+            custom: { base: '', model: '' }
+        };
+
+        const FILE_DOWNLOAD_MAP = {
+            audio_file: { el: els.dlAudio, path: 'audio' },
+            srt_file: { el: els.dlSrt, path: 'srt' },
+            optimized_srt_file: { el: els.dlOptSrt, path: 'optimized_srt' },
+            note_file: { el: els.dlNote, path: 'note' }
+        };
+
+        function initPage() {
+            bindEvents();
+            applyProviderDefaults(state.config.provider);
+            toggleLlmDetails(false);
+        }
+
+        function bindEvents() {
+            els.dropZone.addEventListener('click', () => els.fileInput.click());
+            els.dropZone.addEventListener('dragover', onDropZoneDragOver);
+            els.dropZone.addEventListener('dragleave', onDropZoneDragLeave);
+            els.dropZone.addEventListener('drop', onDropZoneDrop);
+            els.fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+            els.reselectBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                resetUpload();
+            });
+            els.useLlmCheckbox.addEventListener('change', onLlmToggleChange);
+            els.providerChips.forEach((chip) => chip.addEventListener('click', () => onProviderChipClick(chip)));
+            els.startBtn.addEventListener('click', startProcess);
+            window.addEventListener('beforeunload', stopPolling);
+        }
+
+        function onDropZoneDragOver(e) {
+            e.preventDefault();
+            els.dropZone.classList.add('drag-over');
+        }
+
+        function onDropZoneDragLeave() {
+            els.dropZone.classList.remove('drag-over');
+        }
+
+        function onDropZoneDrop(e) {
+            e.preventDefault();
+            els.dropZone.classList.remove('drag-over');
+            handleFile(e.dataTransfer.files[0]);
+        }
+
+        function onLlmToggleChange(e) {
+            const enabled = e.target.checked;
+            state.config.useLlm = enabled;
+            toggleLlmDetails(enabled);
+        }
+
+        function onProviderChipClick(chip) {
+            activateProviderChip(chip);
+            applyProviderDefaults(chip.dataset.val);
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+            state.file = file;
+            els.fileName.textContent = file.name;
+            setVisibility(els.uploadPlaceholder, false);
+            setVisibility(els.fileInfo, true);
+            setVisibility(els.configSection, true);
+            setTimeout(() => els.configSection.scrollIntoView({ behavior: 'smooth' }), 100);
+        }
+
+        function resetUpload() {
+            state.file = null;
+            els.fileInput.value = '';
+            setVisibility(els.uploadPlaceholder, true);
+            setVisibility(els.fileInfo, false);
+            setVisibility(els.configSection, false);
+        }
+
+        function setVisibility(el, show) {
+            el.classList.toggle('hidden', !show);
+        }
+
+        function toggleLlmDetails(enabled) {
+            setVisibility(els.llmDetails, enabled);
+            els.generateNoteCheckbox.disabled = !enabled;
+            if (!enabled) {
+                els.generateNoteCheckbox.checked = false;
+            }
+            els.generateNoteLabel.classList.toggle('text-gray-900', enabled);
+            els.generateNoteLabel.classList.toggle('text-gray-400', !enabled);
+        }
+
+        function activateProviderChip(activeChip) {
+            els.providerChips.forEach((chip) => {
+                const isActive = chip === activeChip;
+                chip.classList.toggle('active-provider', isActive);
+                chip.classList.toggle('bg-gray-900', isActive);
+                chip.classList.toggle('text-white', isActive);
+                chip.classList.toggle('bg-gray-50', !isActive);
+                chip.classList.toggle('text-gray-500', !isActive);
+            });
+        }
+
+        function applyProviderDefaults(providerKey) {
+            const provider = PROVIDERS[providerKey] || PROVIDERS.openai;
+            state.config.provider = providerKey;
+            state.config.baseUrl = provider.base;
+            state.config.model = provider.model;
+            if (providerKey === 'custom') {
+                els.llmBase.readOnly = false;
+                els.llmModel.readOnly = false;
+                els.llmBase.value = '';
+                els.llmModel.value = '';
+                els.llmBase.classList.remove('text-gray-500');
+                els.llmModel.classList.remove('text-gray-500');
+                return;
+            }
+            els.llmBase.readOnly = true;
+            els.llmModel.readOnly = false;
+            els.llmBase.value = provider.base;
+            els.llmModel.value = provider.model;
+            els.llmBase.classList.add('text-gray-500');
+        }
+
+        function setLoading(isLoading) {
+            els.startBtn.disabled = isLoading;
+            els.startBtn.textContent = isLoading ? '处理中' : '开始处理';
+        }
+
+        function resetToReadyState() {
+            stopPolling();
+            setLoading(false);
+            setVisibility(els.processingState, false);
+            setVisibility(els.uploadSection, true);
+            setVisibility(els.configSection, !!state.file);
+        }
+
+        function handleProcessError(message) {
+            resetToReadyState();
+            alert(`提示：${message}`);
+        }
+
+        function updateStatus(title, desc) {
+            els.statusTitle.textContent = title;
+            if (desc) {
+                els.statusDesc.textContent = desc;
+            }
+        }
+
+        function getStatusText(message) {
+            if (!message) return { title: '处理中', desc: '请稍候' };
+            if (message.includes('上传')) return { title: '上传中', desc: '文件传输中' };
+            if (message.includes('初始化')) return { title: '准备中', desc: '流程初始化中' };
+            if (message.includes('音频')) return { title: '提取音频', desc: '音轨处理中' };
+            if (message.includes('Whisper') || message.includes('转写')) return { title: '语音识别', desc: '字幕生成中' };
+            if (message.includes('LLM') || message.includes('优化')) return { title: '智能润色', desc: '润色中' };
+            if (message.includes('笔记')) return { title: '生成笔记', desc: '整理中' };
+            if (message.includes('摘要')) return { title: '生成摘要', desc: '提炼中' };
+            if (message.includes('完成')) return { title: '处理完成', desc: '可下载' };
+            if (message.includes('失败')) return { title: '处理异常', desc: '请重试' };
+            return { title: '处理中', desc: '请稍候' };
+        }
+
+        async function apiRequest(url, options = {}, fallbackError = '请求失败，请稍后重试') {
+            const res = await fetch(url, options);
+            if (res.ok) {
+                return res;
+            }
+            let detail = '';
+            try {
+                const errorData = await res.json();
+                if (typeof errorData.detail === 'string') {
+                    detail = errorData.detail;
+                } else if (errorData.detail && typeof errorData.detail === 'object') {
+                    detail = errorData.detail.message || '';
+                } else {
+                    detail = errorData.message || '';
+                }
+            } catch {
+                detail = '';
+            }
+            throw new Error(detail || fallbackError);
+        }
+
+        function buildProcessPayload() {
+            const baseUrl = els.llmBase.readOnly ? state.config.baseUrl : els.llmBase.value.trim();
+            const modelInput = els.llmModel.value.trim();
+            const modelName = modelInput || state.config.model;
+            if (els.useLlmCheckbox.checked && (!baseUrl || !modelName)) {
+                throw new Error('请补全接口地址与模型名称');
+            }
+            return {
+                task_id: state.taskId,
+                model_size: els.modelSize.value,
+                use_llm: els.useLlmCheckbox.checked,
+                llm_api_key: els.llmKey.value.trim(),
+                llm_base_url: baseUrl,
+                llm_model: modelName,
+                humor_level: els.humorLevel.value,
+                generate_note: els.generateNoteCheckbox.checked
+            };
+        }
+
+        async function startProcess() {
+            if (!state.file) {
+                alert('请先上传文件');
+                return;
+            }
+            try {
+                setLoading(true);
+                setVisibility(els.configSection, false);
+                setVisibility(els.uploadSection, false);
+                setVisibility(els.processingState, true);
+                setVisibility(els.resultState, false);
+
+                updateStatus('上传中', '文件传输中');
+                const formData = new FormData();
+                formData.append('file', state.file);
+                const uploadRes = await apiRequest('/upload', { method: 'POST', body: formData }, '上传失败，请稍后重试');
+                const uploadData = await uploadRes.json();
+                state.taskId = uploadData.task_id;
+
+                updateStatus('准备中', '流程初始化中');
+                const processData = buildProcessPayload();
+                await apiRequest(
+                    '/process',
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(processData)
+                    },
+                    '启动失败，请检查参数后重试'
+                );
+                startPolling();
+            } catch (e) {
+                handleProcessError(e.message);
+            }
+        }
+
+        function stopPolling() {
+            if (state.pollTimer) {
+                clearInterval(state.pollTimer);
+                state.pollTimer = null;
+            }
+        }
+
+        function startPolling() {
+            stopPolling();
+            state.pollTimer = setInterval(async () => {
+                try {
+                    const res = await fetch(`/task/${state.taskId}`);
+                    if (!res.ok) return;
+                    const task = await res.json();
+                    const statusText = getStatusText(task.message || '');
+                    updateStatus(statusText.title, statusText.desc);
+                    if (task.status === 'completed') {
+                        stopPolling();
+                        showResults(task);
+                        setLoading(false);
+                        return;
+                    }
+                    if (task.status === 'failed') {
+                        stopPolling();
+                        handleProcessError('处理失败，请稍后重试');
+                    }
+                } catch (e) {
+                    handleProcessError('状态同步失败，请重试');
+                }
+            }, 1000);
+        }
+
+        function showResults(task) {
+            setVisibility(els.processingState, false);
+            setVisibility(els.resultState, true);
+            Object.entries(FILE_DOWNLOAD_MAP).forEach(([taskKey, config]) => {
+                if (!task[taskKey]) return;
+                config.el.href = `/download/${state.taskId}/${config.path}`;
+                setVisibility(config.el, true);
+            });
+        }
+
+        window.onload = initPage;
+    </script>
+</body>
+</html>
