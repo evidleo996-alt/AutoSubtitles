@@ -1,12 +1,13 @@
-# AI 视频字幕生成工具 (AutoSubtitles)
+# AI赋能的创作工具
 
-这是一个简单的 AI 工具，用于自动为视频生成 SRT 字幕文件。
+这是一个简单的 AI 工具，用于自动提取视频的音频文件，生成 SRT 字幕文件以及md文档，提升视频或文案创作。
 
 ## 功能
 - 自动提取视频中的音频
-- 使用 OpenAI Whisper 模型进行高精度语音转写
+- 使用 OpenAI Whisper 模型进行高精度语音转写（可选择模型大小）
 - 生成标准的 SRT 字幕文件 (带时间轴)
-- 支持多种模型大小 (Tiny 到 Large)
+- 生成小红书风格的md文档用于发布于小红书等平台
+- 支持配置LLM以提升整体创作质量与效率
 
 ## 安装与使用
 
@@ -24,7 +25,7 @@
 ### 2. 运行工具
 1. 打开终端，进入项目目录：
    ```bash
-   cd /Volumes/T7/编程项目/Projects/Studio/AutoSubtitles
+   cd Projects/Studio/AutoSubtitles
    ```
 2. 激活虚拟环境并安装依赖 (首次运行需要)：
    ```bash
