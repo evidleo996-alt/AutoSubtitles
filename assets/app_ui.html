@@ -446,6 +446,8 @@
     </style>
 
     <script>
+        const DEMO_MODE = new URLSearchParams(window.location.search).get('demo') === '1' || window.location.hostname.endsWith('github.io');
+
         const state = {
             file: null,
             taskId: null,
@@ -507,6 +509,9 @@
             bindEvents();
             applyProviderDefaults(state.config.provider);
             toggleLlmDetails(false);
+            if (DEMO_MODE) {
+                els.startBtn.textContent = '演示模式';
+            }
         }
 
         function bindEvents() {
@@ -699,6 +704,20 @@
                 alert('请先上传文件');
                 return;
             }
+
+            if (DEMO_MODE) {
+                setVisibility(els.configSection, false);
+                setVisibility(els.uploadSection, false);
+                setVisibility(els.processingState, true);
+                updateStatus('演示模式', 'GitHub Pages 仅展示前端界面');
+                setTimeout(() => {
+                    setVisibility(els.processingState, false);
+                    setVisibility(els.resultState, true);
+                    alert('当前是静态演示页，上传与处理功能需本地或云端后端服务支持。');
+                }, 1200);
+                return;
+            }
+
             try {
                 setLoading(true);
                 setVisibility(els.configSection, false);
